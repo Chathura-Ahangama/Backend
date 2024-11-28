@@ -103,7 +103,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log("server running on port 3000! ");
+  console.log(`server running on port ${port}...`);
 });
 
 export default app;
