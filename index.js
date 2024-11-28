@@ -18,6 +18,10 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+app.get("/", (req, res) => {
+  res.send("server is working");
+});
+
 app.post("/upload", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
