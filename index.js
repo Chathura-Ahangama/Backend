@@ -12,31 +12,25 @@ const app = express();
 
 app.use(cors());
 
-// Set up multer for file handling
 const upload = multer();
 
-// Initialize OpenAI with the API key from environment variables
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// POST route for handling file uploads
 app.post("/upload", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).send("No file uploaded.");
     }
 
-    // Parse the Excel file into JSON
     const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
     const json = XLSX.utils.sheet_to_json(sheet);
 
-    // Convert the JSON data to a string for the OpenAI prompt
     const cleanedData = JSON.stringify(json);
 
-    // Define the prompt with the extracted JSON as CONTEXT
     const prompt = `You are a helpful assistant. Extract the following sections from the provided CONTEXT and return a JSON object .so your response should always start with "{":
 
     1. **Reference Number**: Extract the reference number from the context.
@@ -85,17 +79,14 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
     `;
 
-    // Use the latest syntax to call the OpenAI API for chat completion
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       temperature: 0,
       messages: [{ role: "user", content: prompt }],
     });
 
-    // Extract the assistant's response
     const assistantResponse = response.choices[0].message.content;
 
-    // Send the response back to the client
     res.json(assistantResponse);
   } catch (error) {
     console.error("Error processing file:", error);
